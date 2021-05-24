@@ -4,12 +4,14 @@ use sha2::{Digest, Sha256};
 
 static DIFFICULTY: u8 = 16;
 
+type Hash = [u8; 32];
+
 #[derive(Debug)]
 pub struct Block {
     nonce: u32,
-    previous_hash: [u8; 32],
+    previous_hash: Hash,
     data: Vec<u8>,
-    hash: [u8; 32],
+    hash: Hash,
 }
 
 impl Block {
@@ -22,7 +24,7 @@ impl Block {
         Block::new(self.hash, data)
     }
 
-    fn new(previous_hash: [u8; 32], data: Vec<u8>) -> Self {
+    fn new(previous_hash: Hash, data: Vec<u8>) -> Self {
 
         let mut block = Block {
             nonce: 0,
@@ -35,7 +37,7 @@ impl Block {
         block
     }
 
-    pub fn from(previous_hash: [u8; 32], data: Vec<u8>, nonce: u32, hash: [u8; 32]) -> Self {
+    pub fn from(previous_hash: Hash, data: Vec<u8>, nonce: u32, hash: Hash) -> Self {
         Block {
             nonce,
             previous_hash,
@@ -52,13 +54,13 @@ impl Block {
         bytes
     }
 
-    fn calculate_hash(bytes: &Vec<u8>) -> [u8; 32] {
+    fn calculate_hash(bytes: &Vec<u8>) -> Hash {
         let mut hasher = Sha256::new();
         hasher.update(&bytes);
         hasher.finalize().try_into().unwrap()
     }
 
-    fn prefix(hash: &[u8; 32]) -> u32 {
+    fn prefix(hash: &Hash) -> u32 {
         u32::from_be_bytes(hash[0..4].try_into().unwrap()) >> (32 - DIFFICULTY)
     }
 
@@ -89,7 +91,7 @@ impl Block {
         self.hash == hash && Block::prefix(&hash) == 0
     }
 
-    pub fn get_previous_hash(&self) -> [u8; 32] {
+    pub fn get_previous_hash(&self) -> Hash {
         self.previous_hash
     }
 
@@ -101,7 +103,7 @@ impl Block {
         self.nonce
     }
 
-    pub fn get_hash(&self) -> [u8; 32] {
+    pub fn get_hash(&self) -> Hash {
         self.hash
     }
 }
