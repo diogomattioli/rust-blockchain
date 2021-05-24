@@ -16,32 +16,29 @@ pub struct Block {
 
 impl Block {
     
-    fn genesis(data: Vec<u8>) -> Self {
+    fn genesis<T: AsRef<[u8]>>(data: T) -> Self {
         Block::new([0; 32], data)
     }
 
-    fn chain(&self, data: Vec<u8>) -> Self {
+    fn chain<T: AsRef<[u8]>>(&self, data: T) -> Self {
         Block::new(self.hash, data)
     }
 
-    fn new(previous_hash: Hash, data: Vec<u8>) -> Self {
-
-        let mut block = Block {
-            nonce: 0,
-            previous_hash,
-            data,
-            hash: [0; 32],
-        };
-
+    fn new<T: AsRef<[u8]>>(previous_hash: Hash, data: T) -> Self {
+        let mut block = Block::raw(previous_hash, data, 0, [0; 32]);
         block.mine();
         block
     }
 
-    pub fn from(previous_hash: Hash, data: Vec<u8>, nonce: u32, hash: Hash) -> Self {
+    pub fn raw<T: AsRef<[u8]>>(previous_hash: Hash, data: T, nonce: u32, hash: Hash) -> Self {
+
+        let mut v = Vec::new();
+        v.extend_from_slice(data.as_ref());
+
         Block {
             nonce,
             previous_hash,
-            data,
+            data: v,
             hash,
         }
     }
@@ -120,7 +117,7 @@ impl Blockchain {
         }
     }
 
-    pub fn add(&mut self, data: Vec<u8>) -> Option<&Block> {
+    pub fn add<T: AsRef<[u8]>>(&mut self, data: T) -> Option<&Block> {
         let block: Block;
 
         if self.chain.len() == 0 {
