@@ -1,9 +1,10 @@
 use block::Blockchain;
+use block::ProofOfWork;
 
 mod block;
 
 fn main() {
-    let mut chain = Blockchain::new();
+    let mut chain = Blockchain::<ProofOfWork>::new();
     chain.add(vec![0]);
     chain.add("testing");
     chain.add([1,2,3]);
