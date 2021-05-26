@@ -32,7 +32,7 @@ impl Consensus for ProofOfWork {
         let mut bytes = vec![];
         bytes.extend_from_slice(&block.nonce.to_be_bytes());
         bytes.extend_from_slice(&block.previous_hash[..]);
-        bytes.extend_from_slice(&block.data[..]);
+        bytes.extend_from_slice(&block.payload[..]);
         bytes
     }
 
@@ -68,33 +68,33 @@ impl Consensus for ProofOfWork {
 pub struct Block {
     nonce: u32,
     previous_hash: Hash,
-    data: Vec<u8>,
+    payload: Vec<u8>,
     hash: Hash,
 }
 
 impl Block {
     
-    fn genesis<T: AsRef<[u8]>>(data: T) -> Self {
-        Block::new([0; 32], data)
+    fn genesis<T: AsRef<[u8]>>(payload: T) -> Self {
+        Block::new([0; 32], payload)
     }
 
-    fn chain<T: AsRef<[u8]>>(&self, data: T) -> Self {
-        Block::new(self.hash, data)
+    fn chain<T: AsRef<[u8]>>(&self, payload: T) -> Self {
+        Block::new(self.hash, payload)
     }
 
-    fn new<T: AsRef<[u8]>>(previous_hash: Hash, data: T) -> Self {
-        Block::raw(previous_hash, data, 0, [0; 32])
+    fn new<T: AsRef<[u8]>>(previous_hash: Hash, payload: T) -> Self {
+        Block::raw(previous_hash, payload, 0, [0; 32])
     }
 
-    pub fn raw<T: AsRef<[u8]>>(previous_hash: Hash, data: T, nonce: u32, hash: Hash) -> Self {
+    pub fn raw<T: AsRef<[u8]>>(previous_hash: Hash, payload: T, nonce: u32, hash: Hash) -> Self {
 
         let mut v = Vec::new();
-        v.extend_from_slice(data.as_ref());
+        v.extend_from_slice(payload.as_ref());
 
         Block {
             nonce,
             previous_hash,
-            data: v,
+            payload: v,
             hash,
         }
     }
@@ -103,8 +103,8 @@ impl Block {
         self.previous_hash
     }
 
-    pub fn get_data(&self) -> Vec<u8> {
-        self.data.clone()
+    pub fn get_payload(&self) -> Vec<u8> {
+        self.payload.clone()
     }
 
     pub fn get_nonce(&self) -> u32 {
@@ -130,14 +130,14 @@ impl<C: Consensus> Blockchain<C> {
         }
     }
 
-    pub fn add<T: AsRef<[u8]>>(&mut self, data: T) -> Option<&Block> {
+    pub fn add<T: AsRef<[u8]>>(&mut self, payload: T) -> Option<&Block> {
         let mut block: Block;
 
         if self.chain.len() == 0 {
-            block = Block::genesis(data);
+            block = Block::genesis(payload);
         }
         else {
-            block = self.chain.last().unwrap().chain(data);
+            block = self.chain.last().unwrap().chain(payload);
         }
         C::calculate_hash(&mut block);
 

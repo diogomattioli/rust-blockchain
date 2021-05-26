@@ -12,6 +12,6 @@ fn main() {
     chain.add(vec![0]);
 
     for block in chain.iter() {
-        println!("{:02x?} {} {:?}", block.get_hash(), block.get_nonce(), block.get_data());
+        println!("{:02x?} {} {:?}", block.get_hash(), block.get_nonce(), block.get_payload());
     }
 }
